@@ -35,7 +35,7 @@ class MainController extends AbstractController
         dump($responseArray);
 
         return new Response(
-            '<html><body>Output: '.$responseArray["data"][0]["url"].'</body></html>'
+            '<html><body><img src="'. $responseArray["data"][0]["url"].'" alt="Auto generated image" /></body></html>'
         );
     }
 }

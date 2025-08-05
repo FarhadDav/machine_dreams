@@ -1,5 +1,33 @@
+version: "3.8"
 
 services:
+  # your PHP-FPM container
+  app:
+    build: .
+    container_name: symfony-app
+    restart: unless-stopped
+    working_dir: /var/www
+    # load your dev env vars
+    env_file: .env.dev
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/var/www
+    networks:
+      - symfony-network
+
+  # nginx as reverse proxy
+  webserver:
+    image: nginx:alpine
+    container_name: symfony-webserver
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - .:/var/www:ro
+    networks:
+      - symfony-network
 ###> doctrine/doctrine-bundle ###
   database:
     image: postgres:${POSTGRES_VERSION:-16}-alpine
@@ -17,9 +45,13 @@ services:
       - database_data:/var/lib/postgresql/data:rw
       # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
       # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
+    ###< doctrine/doctrine-bundle ###
 
 volumes:
 ###> doctrine/doctrine-bundle ###
   database_data:
-###< doctrine/doctrine-bundle ###
+###< doctrine/doctrine-bundle ###    
+
+# you’ll merge in your database + mailer from compose.override.yaml
+networks:
+  symfony-network:
